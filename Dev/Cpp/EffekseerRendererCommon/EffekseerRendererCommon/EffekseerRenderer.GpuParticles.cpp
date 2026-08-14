@@ -328,7 +328,7 @@ bool GpuParticleSystem::InitSystem(const Settings& settings)
 
 	for (const auto& emitter : emitters_)
 	{
-		if (!emitter.Buffer)
+		if (!emitter.Buffer || !emitter.RenderConstantsBuffer)
 		{
 			return false;
 		}
@@ -596,11 +596,11 @@ void GpuParticleSystem::RenderFrame(const Context& context)
 				const auto& coordinateTransform = emitter.InstanceGlobal->RenderingCoordinateTransform;
 				const auto cameraForRendering = TransformCameraMatrixToEffectSpace(
 					Effekseer::SIMD::Mat44f(baseRenderConstants.CameraMat), coordinateTransform);
-				const auto cameraPosition = TransformCameraVectorToEffectSpace(
+				const auto cameraPosition = TransformCameraPositionToEffectSpace(
 					Effekseer::SIMD::Vec3f(
 						baseRenderConstants.CameraPos.x, baseRenderConstants.CameraPos.y, baseRenderConstants.CameraPos.z),
 					coordinateTransform);
-				const auto cameraFront = TransformCameraVectorToEffectSpace(
+				const auto cameraFront = TransformCameraFrontToEffectSpace(
 					Effekseer::SIMD::Vec3f(
 						baseRenderConstants.CameraFront.x, baseRenderConstants.CameraFront.y, baseRenderConstants.CameraFront.z),
 					coordinateTransform);
