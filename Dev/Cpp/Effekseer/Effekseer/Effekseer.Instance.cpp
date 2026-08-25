@@ -62,12 +62,19 @@ SIMD::Mat43f TimeSeriesMatrix::Get(float time) const
 		return GetPrevious();
 	}
 
+	// A matrix that is sheared (non-uniform scale combined with rotation) or that has a
+	// zero-length axis cannot be decomposed into SRT: GetSRT() does not handle a per-axis
+	// zero and would produce NaN. Both are legitimately reachable from authored effects,
+	// so treat them as a normal case - the same way the draw path does in
+	// Effekseer.RenderingTransform.cpp - and skip the interpolation instead of asserting.
+	if (!SIMD::ToStruct(previous_).IsProperSRT() || !SIMD::ToStruct(current_).IsProperSRT())
+	{
+		return GetCurrent();
+	}
+
 	SIMD::Vec3f s_previous;
 	SIMD::Mat43f r_previous;
 	SIMD::Vec3f t_previous;
-
-	EFK_ASSERT(SIMD::ToStruct(previous_).IsProperSRT());
-	EFK_ASSERT(SIMD::ToStruct(current_).IsProperSRT());
 
 	previous_.GetSRT(s_previous, r_previous, t_previous);
 
